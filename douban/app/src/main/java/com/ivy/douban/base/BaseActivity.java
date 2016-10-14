@@ -17,9 +17,12 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         AppManager.getAppManager().addActivity(this);// 添加Activity到堆栈
+        /**
+         * setContentView和findViewById操作(可以只用ButterKnife快捷操作)
+         */
         initView();//需要设置setContentView
 
-        ButterKnife.bind(this);//绑定ButterKnife
+        //ButterKnife.bind(this);//绑定ButterKnife
 
         initListener();//监听
 

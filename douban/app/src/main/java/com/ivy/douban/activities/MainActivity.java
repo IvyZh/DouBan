@@ -1,68 +1,77 @@
 package com.ivy.douban.activities;
 
-import android.util.Log;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.view.View;
-import android.widget.Button;
-import android.widget.ListView;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.ivy.douban.R;
-import com.ivy.douban.adapter.MovieAdapter;
 import com.ivy.douban.base.BaseActivity;
-import com.ivy.douban.domain.MoviesBean;
-import com.ivy.douban.net.Retrofit2Utils;
+import com.ivy.douban.base.BaseFragment;
+import com.ivy.douban.fragments.BookFragment;
+import com.ivy.douban.fragments.MovieFragment;
+import com.ivy.douban.fragments.MusicFragment;
+import com.ivy.douban.utils.L;
+import com.ivy.douban.utils.UIUtils;
 
-import java.util.List;
+import java.util.ArrayList;
 
 import butterknife.BindView;
+import butterknife.ButterKnife;
 import butterknife.OnClick;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import rx.Observable;
-import rx.Observer;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 
 
 public class MainActivity extends BaseActivity {
 
+    @BindView(R.id.vp_main)
+    ViewPager mVpMain;
+    @BindView(R.id.iv_book)
+    ImageView mIvBook;
+    @BindView(R.id.tv_book)
+    TextView mTvBook;
+    @BindView(R.id.rl_book)
+    RelativeLayout mRlBook;
+    @BindView(R.id.iv_movie)
+    ImageView mIvMovie;
+    @BindView(R.id.tv_movie)
+    TextView mTvMovie;
+    @BindView(R.id.rl_movie)
+    RelativeLayout mRlMovie;
+    @BindView(R.id.iv_music)
+    ImageView mIvMusic;
+    @BindView(R.id.tv_music)
+    TextView mTvMusic;
+    @BindView(R.id.rl_music)
+    RelativeLayout mRlMusic;
 
-    @BindView(R.id.bt_top250)
-    Button mBtTop250;
-    @BindView(R.id.bt_theaters)
-    Button mBtTheaters;
-    @BindView(R.id.lv_movies)
-    ListView mLvMovies;
-
-    private MovieAdapter adapter;
-    private List<MoviesBean.SubjectsBean> mDataList;
-
-    private Observer mObserver;
+    private ArrayList<BaseFragment> fragments;
 
     @Override
     protected void initView() {
         setContentView(R.layout.activity_main);
+        ButterKnife.bind(this);
 
-        //git
+        fragments = new ArrayList<>();
+        fragments.add(new BookFragment());
+        fragments.add(new MovieFragment());
+        fragments.add(new MusicFragment());
 
-        mObserver = new Observer<MoviesBean>() {
+        mVpMain.setAdapter(new FragmentAdapter(getSupportFragmentManager(), fragments));
+
+        mVpMain.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
-            public void onCompleted() {
-
+            public void onPageSelected(int position) {
+                L.v("onPageSelected " + position);
+                selectPos(position);
+                fragments.get(position).initData();
             }
-
-            @Override
-            public void onError(Throwable e) {
-
-            }
-
-            @Override
-            public void onNext(MoviesBean bean) {
-                List<MoviesBean.SubjectsBean> subjects = bean.getSubjects();
-                setData(subjects);
-            }
-
-        };
+        });
+        LinearLayoutManager manager = new LinearLayoutManager(UIUtils.getContext());
     }
 
     @Override
@@ -73,98 +82,75 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void loadData() {
 
+//        fragments.get(1).initData();
+
     }
 
 
-    @OnClick({R.id.bt_top250, R.id.bt_theaters})
+    @OnClick({R.id.rl_book, R.id.rl_movie, R.id.rl_music})
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.bt_top250:
-                Call<MoviesBean> call = Retrofit2Utils.getServiceApi().getTop250Movies(0, 20);
-                call.enqueue(new Callback<MoviesBean>() {
-                    @Override
-                    public void onResponse(Call<MoviesBean> call, Response<MoviesBean> response) {
-                        if (response.isSuccessful()) {
-                            setData(response.body().getSubjects());
-                        }
-
-                    }
-
-                    @Override
-                    public void onFailure(Call<MoviesBean> call, Throwable t) {
-
-                    }
-                });
+            case R.id.rl_book:
+                selectPos(0);
                 break;
-            case R.id.bt_theaters:
-                // 返回对象
-//                getObj();
-
-                // 返回String
-//                getString();
-
-                // 使用RxAndroid
-                getRxAndroid();
-
+            case R.id.rl_movie:
+                selectPos(1);
+                break;
+            case R.id.rl_music:
+                selectPos(2);
                 break;
         }
     }
 
-    private void getRxAndroid() {
-        Observable<MoviesBean> observable = Retrofit2Utils.getServiceApi().getTheatersMoviesObservable("上海");
+    private void selectPos(int pos) {
+        mVpMain.setCurrentItem(pos);
 
+        // 还原所有状态
 
-        observable.subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(mObserver);
-    }
+        mTvBook.setTextColor(UIUtils.getColor(R.color.bottom_text_nor));
+        mTvMovie.setTextColor(UIUtils.getColor(R.color.bottom_text_nor));
+        mTvMusic.setTextColor(UIUtils.getColor(R.color.bottom_text_nor));
+        mIvBook.setImageResource(R.mipmap.icon_book);
+        mIvMovie.setImageResource(R.mipmap.icon_movie);
+        mIvMusic.setImageResource(R.mipmap.icon_music);
 
-    private void getString() {
-        Call<String> call3 = Retrofit2Utils.getServiceApi().getTheatersMoviesString("上海");
-        call3.enqueue(new Callback<String>() {
-            @Override
-            public void onResponse(Call<String> call, Response<String> response) {
-                Log.v("success", response.body());
-            }
-
-            @Override
-            public void onFailure(Call<String> call, Throwable t) {
-                Log.v("fail", t.getMessage());
-            }
-        });
-    }
-
-    private void getObj() {
-        Call<MoviesBean> call2 = Retrofit2Utils.getServiceApi().getTheatersMovies("上海");
-        call2.enqueue(new Callback<MoviesBean>() {
-            @Override
-            public void onResponse(Call<MoviesBean> call, Response<MoviesBean> response) {
-                if (response.isSuccessful()) {
-                    setData(response.body().getSubjects());
-                }
-
-            }
-
-            @Override
-            public void onFailure(Call<MoviesBean> call, Throwable t) {
-
-            }
-        });
-    }
-
-
-    private void setData(List<MoviesBean.SubjectsBean> subjects) {
-
-//        Log.v("way", response);
-        if (adapter == null) {
-            mDataList = subjects;
-            adapter = new MovieAdapter(MainActivity.this, mDataList);
-            mLvMovies.setAdapter(adapter);
-        } else {
-            mDataList.clear();
-            mDataList.addAll(subjects);
-            adapter.notifyDataSetChanged();
+        //设置新数据
+        switch (pos) {
+            case 0:
+                mTvBook.setTextColor(UIUtils.getColor(R.color.bottom_text_pre));
+                mIvBook.setImageResource(R.mipmap.icon_book_pre);
+                break;
+            case 1:
+                mTvMovie.setTextColor(UIUtils.getColor(R.color.bottom_text_pre));
+                mIvMovie.setImageResource(R.mipmap.icon_movie_pre);
+                break;
+            case 2:
+                mTvMusic.setTextColor(UIUtils.getColor(R.color.bottom_text_pre));
+                mIvMusic.setImageResource(R.mipmap.icon_music_pre);
+                break;
         }
 
     }
+
+
+    class FragmentAdapter extends FragmentPagerAdapter {
+
+        private ArrayList<BaseFragment> fragments;
+
+        public FragmentAdapter(FragmentManager fm, ArrayList<BaseFragment> fragments) {
+            super(fm);
+            this.fragments = fragments;
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            return fragments.get(position);
+        }
+
+        @Override
+        public int getCount() {
+            return fragments.size();
+        }
+    }
+
 }

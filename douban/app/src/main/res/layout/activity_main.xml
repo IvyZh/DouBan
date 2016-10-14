@@ -5,28 +5,13 @@
     android:orientation="vertical"
     android:layout_height="match_parent">
 
-    <LinearLayout
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/vp_main"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_weight="1" />
 
-        <Button
-            android:id="@+id/bt_top250"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Top250" />
+    <include layout="@layout/layout_main_bottom" />
 
-        <Button
-            android:id="@+id/bt_theaters"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="theaters"
-            android:text="正在热映" />
-    </LinearLayout>
-
-
-    <ListView
-        android:id="@+id/lv_movies"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
 </LinearLayout>
