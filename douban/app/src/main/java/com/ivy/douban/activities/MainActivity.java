@@ -71,7 +71,8 @@ public class MainActivity extends BaseActivity {
                 fragments.get(position).initData();
             }
         });
-        LinearLayoutManager manager = new LinearLayoutManager(UIUtils.getContext());
+
+        selectPos(0);
     }
 
     @Override

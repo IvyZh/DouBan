@@ -95,13 +95,14 @@ public class TheatersHolder extends BaseHolder {
             int rate = (int) (average / 2 + 0.5);
             if (rate > 5) rate = 5;
             holder.rbRating.setMax(max);
-            holder.rbRating.setProgress(rate);
+            holder.rbRating.setProgress((int) average);
+
+            holder.tvRating.setText(average+"");
         }
 
 
         @Override
         public int getItemCount() {
-            L.v("getCount:" + mDatas.size());
             return mDatas.size();
         }
 
